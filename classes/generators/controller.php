@@ -64,8 +64,8 @@ class Generators_Controller extends Generator
 
 		// holder for actions source, and base templates for actions and views
 		$actions_source 	= '';
-		$action_template 	= Common::load_template('controller/action.tpl');
-		$view_template 		= Common::load_template('controller/view.tpl');
+		$main_action_template 	= Common::load_template('controller/action.tpl');
+		$main_view_template 		= Common::load_template('controller/view.tpl');
 
 		$restful = (strstr(implode(' ', $this->arguments), ':')) ? true : false;
 
@@ -90,11 +90,25 @@ class Generators_Controller extends Generator
 			// add the current action to the markers
 			$markers['#ACTION#'] = Str::lower($action);
 			$markers['#VERB#'] = $verb;
-
+			
+			$custom_action_template_name = 'controller/action.' . Str::lower($action) . '.tpl';
+			if ( Common::template_exists($custom_action_template_name) ){
+				$action_template = Common::load_template($custom_action_template_name);
+			} else {
+				$action_template 	= $main_action_template;
+			}
+			
 			// append the replaces source
 			$actions_source .= Common::replace_markers($markers, $action_template);
 
 			$file_prefix = ($restful) ? $verb.'_' :'';
+			
+			$custom_view_template_name = 'controller/view.' . Str::lower($action) . '.tpl';
+			if ( Common::template_exists($custom_view_template_name) ){
+				$view_template = Common::load_template($custom_view_template_name);
+			} else {
+				$view_template 	= $main_view_template; 
+			}
 
 
 			// add the file to be created
