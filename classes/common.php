@@ -95,6 +95,30 @@ class Common
 			static::error('A generation template could not be found for this object.');
 		}
 	}
+	/**
+	 * Load the source from a template file and return it
+	 * as a string.
+	 *
+	 * @param $template_name string The file name of the template.
+	 * @return string The template content.
+	 */
+	public static function template_exists($template_name)
+	{
+		// first look in the project templates this way
+		// the user can have project-specific templating
+		if(File::exists($source = Config::get('bob::options.project_templates').$template_name))
+		{
+			return true;
+		}
+		elseif(File::exists($source = Config::get('bob::options.template_path').$template_name))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	/**
 	 * Use a key-value array to replace markers within
