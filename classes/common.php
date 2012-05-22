@@ -96,11 +96,10 @@ class Common
 		}
 	}
 	/**
-	 * Load the source from a template file and return it
-	 * as a string.
+	 * checks if the template exists and returns true or false
 	 *
 	 * @param $template_name string The file name of the template.
-	 * @return string The template content.
+	 * @return Boolean True if it exists, False if not
 	 */
 	public static function template_exists($template_name)
 	{
