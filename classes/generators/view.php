@@ -59,12 +59,19 @@ class Generators_View extends Generator
 
 		// loud our view template
 		$template = Common::load_template('view/view.tpl');
-
+		$viewdir = Common::config('viewdir');
+		
+		if ( !$viewdir || $viewdir === true ){
+			$viewdir = '';
+		} else {
+			Common::log('{c}[ {y}Writing Views to ' . $viewdir . '{c}]');
+		}
+		
 		// added the file to be created
 		$this->writer->create_file(
 			'View',
 			$this->class_path.$this->lower.EXT,
-			$this->bundle_path.'views/'.$this->class_path.$this->lower.EXT,
+			$this->bundle_path.'views/' . $viewdir . '/' . $this->class_path.$this->lower.EXT,
 			Common::replace_markers($markers, $template)
 		);
 	}

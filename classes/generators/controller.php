@@ -109,13 +109,19 @@ class Generators_Controller extends Generator
 			} else {
 				$view_template 	= $main_view_template; 
 			}
+			$viewdir = Common::config('viewdir');
 
+			if ( !$viewdir || $viewdir === true ){
+				$viewdir = '';
+			} else {
+				Common::log('{c}[ {y}Writing Views to ' . $viewdir . '{c}]');
+			}
 
 			// add the file to be created
 			$this->writer->create_file(
 				'View',
 				$this->class_path.$this->lower.'/'.$file_prefix.Str::lower($action).$this->_view_extension,
-				$this->bundle_path.'views/'.$this->class_path.$this->lower.'/'.$file_prefix.Str::lower($action).$this->_view_extension,
+				$this->bundle_path.'views/' . $viewdir . '/' .$this->class_path.$this->lower.'/'.$file_prefix.Str::lower($action).$this->_view_extension,
 				Common::replace_markers($markers, $view_template)
 			);
 		}
