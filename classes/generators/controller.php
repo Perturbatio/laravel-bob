@@ -64,6 +64,8 @@ class Generators_Controller extends Generator
 
 		// holder for actions source, and base templates for actions and views
 		$actions_source 	= '';
+		$action_js_source	= '';
+		
 		$main_action_template 	= Common::load_template('controller/action.tpl');
 		$main_view_template 		= Common::load_template('controller/view.tpl');
 
@@ -124,6 +126,27 @@ class Generators_Controller extends Generator
 				$this->bundle_path.'views/' . $viewdir . '/' .$this->class_path.$this->lower.'/'.$file_prefix.Str::lower($action).$this->_view_extension,
 				Common::replace_markers($markers, $view_template)
 			);
+			
+			//custom javascript
+			$custom_action_js_name = 'controller/view.' . Str::lower($action) . '.js.tpl';
+			if ( Common::template_exists($custom_action_js_name) ){
+				Common::log('{c}[ {y}Creating JS{c}]');
+				$action_js_template = Common::load_template($custom_action_js_name);
+				
+				$action_js_source .= Common::replace_markers($markers, $action_js_template);
+				Common::log( '{c}[ {y}Writing: ' . path('public').'js/' . $this->class_path.$this->lower.'-'.$file_prefix.Str::lower($action). '.js{c}' );
+				//Common::log( '/'.$this->lower.'/'.$this->lower.'-'.$file_prefix.Str::lower($action).$this->_view_extension );
+				
+				// add the file to be created
+				$this->writer->create_file(
+					'asset_js',
+					$this->class_path.$this->lower.'-'.$file_prefix.Str::lower($action). '.js',
+					path('public').'js/' .$this->lower. '/' . $this->lower.'-'.$file_prefix.Str::lower($action). '.js' ,
+					Common::replace_markers($markers, $action_js_template)
+				);
+			}
+			
+			
 		}
 
 		// add a marker to replace the actions stub in the controller
