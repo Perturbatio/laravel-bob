@@ -17,6 +17,8 @@ class Generators_Model extends Generator
 	 * @var string
 	 */
 	private $_timestamps = '';
+	
+	private $_table = '';
 
 	/**
 	 * Start the generation process.
@@ -58,7 +60,93 @@ class Generators_Model extends Generator
 			'#LOWER#'		=> $this->lower,
 			'#TIMESTAMPS#'	=> $this->_timestamps
 		);
+		
+		if ( $this->_table !== '' ){
+			$pdo = DB::connection(Config::get('database.default'))->pdo;
+			$all_columns = $pdo->query('DESCRIBE ' . $this->_table )->fetchAll( PDO::FETCH_COLUMN );
+			
+			$table_primary = $pdo->query("SHOW INDEX FROM tasks WHERE Key_name = 'primary'")->fetch( PDO::FETCH_ASSOC );
+			
+			if ( count( $table_primary ) > 0){
+				
+				if (count( $table_primary ) > 1){
+					$table_primary_temp = array();
+					foreach($table_primary as $primary){
+						$table_primary_temp[] = $primary['column_name'];
+					}
+					$table_primary = $table_primary_temp;
+				} else {
+					$table_primary = array( $table_primary[0]['column_name'] );
+				}
+				
+			} else {
+				$table_primary = '';
+			}
+			
+			$columns = array();
+			$foreign_keys = array();
+			
+			foreach($all_columns as $column_name){
+				switch(true){
+					case in_array($column_name, $table_primary):
+					case $column_name == 'created_at':
+					case $column_name == 'updated_at':
+					break;
+					case strrpos($column_name, '_id') === strlen($column_name) - 3 && $column_name !== $this->_table . '_id':
+						$foreign_keys[] = $column_name;
+					default:
+						$columns[] = $column_name;
+					break;
+				}
+			}
+			
+			$markers['#TABLE_PHP#'] = function($marker, $template) use ( $columns, $foreign_keys, $table_primary ){
+				
+				$result = $template;
+				$matches = array();
+				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $result, $matches );
 
+				if ( count( $matches ) > 0 ){
+					foreach($matches as $match){
+						if (count($match) > 0){
+							$code = str_replace('#TABLE_PHP#', '', str_replace('#END_TABLE_PHP#', '', $match[0]) );
+
+						
+							ob_start();
+							eval("?>".$code."<?php ");
+							$parsed_code = ob_get_clean();
+							
+							$template = str_replace($match[0], $parsed_code, $template);
+							
+						}
+					}
+				}
+				
+				return $template;
+			};
+			
+			
+		} else {
+			$markers['#TABLE_PHP#'] = function($marker, $template) {
+				
+				$result = $template;
+				$matches = array();
+				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $result, $matches );
+
+				if ( count( $matches ) > 0 ){
+					foreach($matches as $match){
+						if (count($match) > 0){
+							$template = str_replace($match[0], '/* no table specified in bob command line but TABLE_PHP found in template */', $template);
+							Common::log('no table specified in bob command line but TABLE_PHP found in template');
+							
+						}
+					}
+				}
+				
+				return $template;
+			};
+		}
+		
 		// loud our model template
 		$template = Common::load_template('model/model.tpl');
 
@@ -136,5 +224,6 @@ class Generators_Model extends Generator
 	{
 		if(Common::config('timestamps') or Common::config('t'))
 			$this->_timestamps = "\tpublic static \$timestamps = true;\n\n";
+		if(Common::config('table')) $this->_table = Common::config('table');
 	}
 }

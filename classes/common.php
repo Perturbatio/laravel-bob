@@ -96,10 +96,11 @@ class Common
 		}
 	}
 	/**
-	 * checks if the template exists and returns true or false
+	 * Load the source from a template file and return it
+	 * as a string.
 	 *
 	 * @param $template_name string The file name of the template.
-	 * @return Boolean True if it exists, False if not
+	 * @return string The template content.
 	 */
 	public static function template_exists($template_name)
 	{
@@ -133,7 +134,11 @@ class Common
 		// is globaly replaced with the array value
 		foreach ($markers as $marker => $value)
 		{
-			$template = str_replace($marker, $value, $template);
+			if ( strpos($marker, '_PHP') > 0 && is_callable( $value ) ){
+				$template = $value( $marker, $template );
+			} else {
+				$template = str_replace($marker, $value, $template);
+			}
 		}
 
 		return $template;
