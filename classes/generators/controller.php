@@ -103,22 +103,21 @@ class Generators_Controller extends Generator
 			
 			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary){
 				
-				$result = $template;
 				$matches = array();
-				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $result, $matches );
-
+				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $template, $matches );
 				if ( count( $matches ) > 0 ){
 					foreach($matches as $match){
 						if (count($match) > 0){
-							$code = str_replace('#TABLE_PHP#', '', str_replace('#END_TABLE_PHP#', '', $match[0]) );
+							
+							foreach($match as $matched_item){
+								$code_to_parse = str_replace('#TABLE_PHP#', '', str_replace('#END_TABLE_PHP#', '', $matched_item) );
 
-						
-							ob_start();
-							eval("?>".$code."<?php ");
-							$parsed_code = ob_get_clean();
-							
-							$template = str_replace($match[0], $parsed_code, $template);
-							
+								ob_start();
+								eval("?>".$code_to_parse."<?php ");
+								$parsed_code = ob_get_clean();
+
+								$template = str_replace($matched_item, $parsed_code, $template);
+							}
 						}
 					}
 				}
