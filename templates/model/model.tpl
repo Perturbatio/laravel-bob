@@ -4,7 +4,9 @@
  *
  ****************/
 class #CLASS# extends Eloquent {
-
+	#TABLE_PHP#<?php
+	echo "static::\$table = \"{$table}\";";
+	?>#END_TABLE_PHP#
 #TIMESTAMPS##RELATIONS#
 	
 	/**
@@ -15,22 +17,25 @@ class #CLASS# extends Eloquent {
 	 */
 	static public function validate($input, $exclude_fields = array(), $ignore_id = 0){
 		$rules = array(//enter validation rules here
-		#TABLE_PHP#
-		<?php
+		#TABLE_PHP#<?php
 		foreach( $columns as $column_name ){
-		echo "
+			if ($column_name == 'name'){
+			echo "
 			'$column_name' => 'required|unique:'.static::\$table.','.$column_name.','.\$ignore_id,";
+			} else {
+			echo "
+			'$column_name' => 'required',";
+			}
 		}
 		?>
 		#END_TABLE_PHP#
 		);
 		
 		$messages = array(//enter validation messages here
-		#TABLE_PHP#
-		<?php
+		#TABLE_PHP#<?php
 		foreach( $columns as $column_name ){
 		echo "
-			'$column_name' => ''";
+			'$column_name' => '',";
 		}
 		?>
 		#END_TABLE_PHP#

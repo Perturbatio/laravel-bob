@@ -63,33 +63,34 @@ class Generators_Controller extends Generator
 		
 		if ( $this->_table !== '' ){
 			$pdo = DB::connection(Config::get('database.default'))->pdo;
-			
 			$all_columns = $pdo->query('DESCRIBE ' . $this->_table )->fetchAll( PDO::FETCH_COLUMN );
-			$table_primary = $pdo->query("SHOW INDEX FROM tasks WHERE Key_name = 'primary'")->fetchAll( PDO::FETCH_ASSOC );
 			
-			if ( count( $table_primary ) > 0){
+			$primary_keys = $pdo->query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'primary'")->fetchAll( PDO::FETCH_ASSOC );
+			
+			if ( count( $primary_keys ) > 0){
 				
-				if (count( $table_primary ) > 1){
-					$table_primary_temp = array();
-					foreach($table_primary as $primary){
-						$table_primary_temp[] = $primary['column_name'];
+				if (count( $primary_keys ) > 1){
+					$primary_keys_temp = array();
+					
+					foreach($primary_keys as $primary){
+						$primary_keys_temp[] = $primary['column_name'];
 					}
-					$table_primary = $table_primary_temp;
+					
+					$primary_keys = $primary_keys_temp;
 				} else {
-					$table_primary = array( $table_primary[0]['column_name'] );
+					$primary_keys = array( $primary_keys[0]['column_name'] );
 				}
 				
 			} else {
-				$table_primary = '';
+				$primary_keys = '';
 			}
-			
 			
 			$columns = array();
 			$foreign_keys = array();
 			
 			foreach($all_columns as $column_name){
 				switch(true){
-					case in_array($column_name, $table_primary):
+					case in_array($column_name, $primary_keys):
 					case $column_name == 'created_at':
 					case $column_name == 'updated_at':
 					break;
@@ -102,7 +103,7 @@ class Generators_Controller extends Generator
 			}
 			
 			$table = $this->_table;
-			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary, $table){
+			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $primary_keys, $table){
 				
 				$matches = array();
 				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $template, $matches );
