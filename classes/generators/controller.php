@@ -101,7 +101,8 @@ class Generators_Controller extends Generator
 				}
 			}
 			
-			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary){
+			$table = $this->_table;
+			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary, $table){
 				
 				$matches = array();
 				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $template, $matches );

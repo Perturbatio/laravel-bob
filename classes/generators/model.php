@@ -100,7 +100,9 @@ class Generators_Model extends Generator
 				}
 			}
 			
-			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary){
+			$table = $this->_table;
+			
+			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary, $table){
 				
 				$matches = array();
 				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $template, $matches );
@@ -126,7 +128,13 @@ class Generators_Model extends Generator
 			
 			
 		} else {
-			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary){
+			//if the user has not specified a table but the TABLE_PHP directive is found, we need to fire a closure with dummy data
+			//set up dummies
+			$columns = array();
+			$foreign_keys = array();
+			$table_primary = array();
+			$table = '';
+			$markers['#TABLE_PHP#'] = function($marker, $template) use ($columns, $foreign_keys, $table_primary, $table){
 				
 				$matches = array();
 				preg_match_all( '/#TABLE_PHP#(.*?)#END_TABLE_PHP#/s', $template, $matches );
